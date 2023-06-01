@@ -17,6 +17,9 @@ public class HangmanGui {
     File wordFile;
     int width = 900;
     int height = 700;
+    int wordLength;
+    int squareSize = 50;
+    int gapSize = 10;
     DrawStand stand;
     ArrayList<String> words;
     String word;
@@ -31,8 +34,8 @@ public class HangmanGui {
         Random random = new Random();
         int index = random.nextInt(words.size());
         word = words.get(index);
-        int length = word.length();
-        generateLetterBlocks(length);
+        wordLength = word.length();
+//        generateLetterBlocks(wordLength);
     }
 
     //REQUIRES: wordFile exists
@@ -68,13 +71,41 @@ public class HangmanGui {
     private void initializeGraphics() {
         frame = new JFrame("HangmanGui");
         mainPanel = new JPanel();
-        hangmanPanel = new JPanel();
+        hangmanPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawLine((width / 2) - (width / 8), height * 3/5, (width / 2) + (width / 8), height * 3/5);
+                g.drawLine(width * 5/12, height * 3/5, width * 5/12, height / 6);
+                g.drawLine(width * 5/12, height / 6, width * 6/12, height / 6);
+                g.drawLine(width * 6/12, height / 6, width * 6/12, height * 5/20);
+            }
+        };
         mainPanel.setLayout(new BorderLayout());
         mainPanel.setPreferredSize(new Dimension(width, height));
-        hangmanPanel.setBounds(900, 0, width, height * 3/4);
-        wordPanel.setBounds(900, 700, width, height / 4);
-        wordPanel.setLayout(null);
+        hangmanPanel.setPreferredSize(new Dimension(width, height * 3/4));
         hangmanPanel.setLayout(new FlowLayout());
+        chooseDifficulty();
+        readWordFile();
+        chooseRandomWord();
+        wordPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                for (int i = 0; i < wordLength; i++) {
+                    int startWidth = (width - ((squareSize * wordLength) + (gapSize * (wordLength - 1)))) / 2;
+                    int currentWidth = startWidth + ((gapSize + squareSize) * i);
+                    g.drawRect(currentWidth, height / 50, squareSize, squareSize);
+                }
+
+            }
+        };
+        wordPanel.setPreferredSize(new Dimension(width, height / 4));
+        wordPanel.setLayout(null);
+
+
+        mainPanel.add(hangmanPanel, BorderLayout.CENTER);
+        mainPanel.add(wordPanel, BorderLayout.SOUTH);
         frame.setContentPane(mainPanel);
 
 
@@ -82,18 +113,15 @@ public class HangmanGui {
         frame.setSize(new Dimension(width, height));
 
         frame.pack();
-        chooseDifficulty();
 
-        mainPanel.add(wordPanel, BorderLayout.PAGE_END);
         mainPanel.repaint();
-        wordPanel.setBackground(Color.BLACK);
         hangmanPanel.setVisible(true);
-        readWordFile();
-        chooseRandomWord();
         wordPanel.setVisible(true);
         mainPanel.setVisible(true);
         mainPanel.repaint();
 
+        frame.revalidate();
+        frame.repaint();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
